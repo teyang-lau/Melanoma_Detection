@@ -1,15 +1,15 @@
-# Pneumonia Detection with ConvNet using Transfer Learning via ResNet50 
+# Melanoma Detection Using EffNet Transfer Learning 
 
 [![made-with-kaggle](https://img.shields.io/badge/Made%20with-Kaggle-lightblue.svg)](https://www.kaggle.com/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/)
 [![made-with-Markdown](https://img.shields.io/badge/Made%20with-Markdown-1f425f.svg)](http://commonmark.org)
 [![Generic badge](https://img.shields.io/badge/STATUS-COMPLETED-<COLOR>.svg)](https://shields.io/)
-[![GitHub license](https://img.shields.io/github/license/teyang-lau/Dog_Breeds_Classification_CNN.svg)](https://github.com/teyang-lau/Dog_Breeds_Classification_CNN/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/teyang-lau/Dog_Breeds_Classification_CNN.svg)](https://github.com/teyang-lau/Melanoma_Detection/blob/master/LICENSE)
 
 Author: TeYang, Lau <br>
-Last Updated: 14 July 2020
+Last Updated: 5 August 2020
 
-<img src = './Pictures/pneumonia.jpg'>
+<img src = './Pictures/melanoma.jpg'>
 
 ### **Please refer to this [notebook](https://www.kaggle.com/teyang/pneumonia-detection-resnets-pytorch?scriptVersionId=38723009) on Kaggle for a more detailed description, analysis and insights of the project.** 
 
@@ -17,39 +17,45 @@ Last Updated: 14 July 2020
 
 ## **Project Motivation** 
 
-For this project, I applied deep learning and convolutional neural networks onto health data, which is my interest and linked to my background and work experience in psychology and neuroscience. Machine learning will becoming increasingly important to healthcare, and can help in the diagnosis and prediction of many diseases if used correctly. Here, I also used Pytorch as the deep learning framework as I recently took a course on it and wanted to apply it to a more complicated project.
+For this project, I applied deep learning and convolutional neural networks onto health data, which is my interest and linked to my background and work experience in psychology and neuroscience. Machine learning will becoming increasingly important to healthcare, and can help in the diagnosis and prediction of many diseases if used correctly. Here, I also tried using TPUs to train the model using Tensorflow and Keras as the deep learning framework as TPUs are really efficient at crunching large datasets in a short time.
+
+This project is also a competition on Kaggle, and I wanted to give it a try, as there is often a better and greater community in the competition compared to other datasets. This provided the opportunity to learn from others who are more experienced data scientists and computer vision experts.
 
 
 
 ## **Project Goals** 
 
-1. To build a deep learning model to **detect** pneumonia from x-ray scans
-2. Use Pytorch as the framework for building the model
-3.  Try out different strategies for improving model performance (e.g., learning rate scheduling, gradient clipping)
+1. To build a deep learning model to **detect** melanoma from images of skin lesions
+2. Use state-of-the-art TPUs to train the model
+3.  Learn different strategies for improving model performance (e.g., learning rate scheduling, label smoothing, test time augmentation)
 
 
 
 ## **Project Overview** 
 
-* Resizing images to same size tensors using `ImageFolder` and `torch.transform`
-* Data augmentation to create diversity using `torch.transform`
-* Using `ResNet50` network to pre-train model on Kaggle's GPU
-* Tuning hyperparameters of the model such as learning rate, min-batch size etc
-* Evaluating training and validation set to achieve the best model performance
+* Configure and initialize **TPU**
+* Feeding **tensorflow records** (TFrecords) to TPU for training and testing
+* **Learning rate scheduling** to improve model training time
+* **Data augmentation** to create diversity and for **Test Time Augmentation** (TTA)
+* Using `EffNets` to pre-train model on Kaggle's TPU
+* Performing **K-fold Cross Validation** for evaluating model performance
+* Building **ensemble models** by merging predictions from image-trained and metadata-trained models
 
 
 
-## **About this dataset** 
+## **About this Dataset** 
 
-The [chest X-ray images](https://data.mendeley.com/datasets/rscbjbr9sj/2) (anterior-posterior) were selected from retrospective cohorts of pediatric patients of one to five years old from Guangzhou Women and Children’s Medical Center, Guangzhou. All chest X-ray imaging was performed as part of patients’ routine clinical care. For the analysis of chest x-ray images, all chest radiographs were initially screened for quality control by removing all low quality or unreadable scans. The diagnoses for the images were then graded by two expert physicians before being cleared for training the AI system. In order to account for any grading errors, the evaluation set was also checked by a third expert. It consists of ~5,000 train images (split into 70% train and 30% validation), and ~600 test images. There is also a data class imbalance, with more pneumonia compared to normal images.
+The [skin lesions images](https://www.kaggle.com/c/siim-isic-melanoma-classification/overview) were provided courtesy of the [International Skin Imaging Collaboration (ISIC)](https://www.isic-archive.com/#!/topWithHeader/wideContentTop/main). The ISIC Archive was created, which hosts an international repository of dermoscopic images, for both the purposes of clinical training, and for supporting technical research toward automated algorithmic analysis. It contains the largest publicly available collection of quality-controlled dermoscopic images of skin lesions. This competition was held in collaboration with the [Society for Imaging Informatics in Medicine (SIIM)](https://siim.org/). Images in TFRecord format have been resized to a uniform 1024x1024, and metadata were also provided. This year's data (2020) consists of ~33,000 train images and ~10,000 test images. There is also a data class imbalance, with more malignant compared to benign skin lesion images. 
 
-<img src = './Pictures/data_inbalance.png'>
+<br>
+
+<img src = './Pictures/data_inbalance.png' align="left">
 
 
 
-## Chest X-Ray Samples
+## Skin Lesion Samples
 
-Here are some sample pictures of the chest x-ray scans and their associated diagnosis. Notice that some pictures are quite hard to distinguish and normal shallow networks/models might not be able to correctly learn and classify them.
+Here are some sample pictures of the skin lesion images and their associated diagnosis. 
 
 <img src = './Pictures/train_samples.png'>
 
@@ -57,27 +63,27 @@ Here are some sample pictures of the chest x-ray scans and their associated diag
 
 ## **Data Augmentation** 
 
-I performed data augmentation by transforming the pictures (random rotation, flipping, random grayscale, and horizontal and vertical shifting) to produce more diversity in the dataset. 
+I performed data augmentation by transforming the pictures (random rotation, flipping, random brightness and contrast, horizontal and vertical shifting, etc) to produce more diversity in the dataset. 
 
-<img src = './Pictures/train_grid.png'>
+<img src = './Pictures/augmentation.png'>
 
 
 
 ## **Model Architecture** 
 
-I made use of the power of transfer learning to pretrain the model. As these were already pre-trained, we can use the first layers of weights and add a few additional layers to classify the images into 2 categories. For this project, I used the popular and powerful residual network **ResNet50**. It contains 48 convolutional layers, 1 max pool layer, and 1 adaptive average pooling layer (allowing any image input size). The power of ResNets lie in the **residual blocks**, which allows deeper layers to be trained without hurting performance.
+I made use of the power of transfer learning to pretrain the model. As these were already pre-trained, we can use the first layers of weights and add a few additional layers to classify the images into 2 categories. For this project, I used the state-of-the-art Efficient Net model **EffNetB6**. It uniformly scales the 3 dimensions of a CNN: **Depth**, **Width**, and **Resolution** using a **compound coefficient ɸ **. ɸ is a user-specified coefficient, which produces **EfficientNets** ***B1-B7***.
 
-<img src = './Pictures/resnet50_architecture.png'>
-
-From [Ji et al.(2019)](https://www.researchgate.net/publication/331364877_Optimized_Deep_Convolutional_Neural_Networks_for_Identification_of_Macular_Diseases_from_Optical_Coherence_Tomography_Images)
+<img src = './Pictures/effnet.png'>
 
 
 
 ## **Model Training Performance** 
 
-I tuned a few hyperparameters of the model such as the learning rate, mini-batch size and algorithm used. From the plot below, we can see that the training is slightly overfitting.
+The model was trained using K-fold cross validation. **Test time augmentation (TTA)** was applied to the validation set to reduce errors in predictions, which improves its performance. Training and validation performance of one fold is shown in the figure below.
 
 <img src = './Pictures/train_val_plot.png'>
+
+In addition to **area under operating characteristic (AUROC)** score, which is the competition's evaluation metric, I also looked at the **Precision Recall Curve** to get a better idea of the model's performance.
 
 
 
@@ -99,20 +105,22 @@ Below are samples of the predictions and their true labels.
 
 ## **Difficulties Faced** 
 
-* **Data class imbalance:** This is quite prevalent in the real world and as data scientists, we should all learn to embrace it and find ways to get around this problem. Usually, one way is to simply collect more data for the undersampled class. However, this is not possible for this dataset and especially for healthcare data, which is very difficult to collect and share. In this kernel, I used **weighted loss** to give more weights to the loss of the normal images. This weighting can be tuned as well to achieve the optimal performance. Stratified sampling is also important in this case, but Pytorch does not yet have any built-in functions.
-* **Overfitting:** This dataset is prone to overfitting as seen by the train and validation plots. Therefore, I only selected the model weights that achieved the best/lowest validation loss. However, sometimes the best validation loss are achieved in the early epochs, and it performs very badly on the test set, probably due to class imbalance when batching or sampling. For that reason, I have chosen to select the best validation loss only after certain epochs. However, I am not sure if this is a valid method. For future work, I will research more into this problem.
+* **Data class imbalance:** This is quite prevalent in the real world and as data scientists, we should all learn to embrace it and find ways to get around this problem. Usually, one way is to simply collect more data for the undersampled class. However, this is not possible for this dataset and especially for healthcare data, which is very difficult to collect and share. In reality, malignant cases will also be less prevalent than benign cases. In this notebook, I used stratified sampling to get around this problem but this does not totally solve the issue. One other way might be to apply weighted loss to give more weights to the loss of the malignant images.
+* **Overfitting:** This dataset is prone to overfitting, especially if one uses a quickly increasing learning rate. Therefore, I only ran the model for ~ 8 epochs as it starts to overtrain by then.
 
 
 
 ## **Conclusions** 
 
-In conclusion, the model performed reasonably well, as it managed to predict most of the pneumonia images. This is important as in healthcare diagnosis, accurate prediction of diseases saves lives. However, false positives can also increase the cost of healthcare, as more people with diseases are diagnosed with diseases. It can also lead to panic and affect people's physical and mental well-being. Better performance can be achieved with better tuning of the model hyperparameters. This is an iterative process, with lots of trial and error.
+In conclusion, our model performs reasonably well based on AUROC score but there can still be room for vast improvement according to the AUPRC score. In the diagnosis of melanoma (to classify lesions as malignant or benign), we often want our recall/sensitivity to be high since we want to correctly identify all true malignant cases. For our model, if we set a low threshold to get a high recall, our precision will greatly suffer, which means that during melanoma screening, many people will get false diagnosis of melanoma (high false positives). Therefore, the current model is still not great for deployment.
 
-Here are some other methods that I tried but did not improve or even hurt performance:
+**What I learnt:**
 
-- Learning rate scheduling using:
-  - [**Step learning rate:**](https://pytorch.org/docs/stable/_modules/torch/optim/lr_scheduler.html#StepLR) decays the learning rate of each parameter group by gamma every step_size epochs.
-  - [**One fit cycle:**](https://pytorch.org/docs/stable/_modules/torch/optim/lr_scheduler.html#OneCycleLR) The 1cycle policy anneals the learning rate from an initial learning rate to some maximum learning rate and then from that maximum learning rate to some minimum learning rate much lower than the initial learning rate. This policy was initially described in the paper [Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates](https://arxiv.org/abs/1708.07120). Refer to this [post](https://sgugger.github.io/the-1cycle-policy.html) to get a better understanding.
-- **Gradient Clipping:** rescale/limit the values of gradients to a small range below a threshold to prevent undesirable changes in parameters due to large gradient values (exploding gradients), which makes the model unstable. Refer to this [post](https://towardsdatascience.com/what-is-gradient-clipping-b8e815cdfb48) for a better understanding.
-- **Weight Decay:** a regularization technique which prevents the weights from becoming too large by adding an additional term (a tunable constant, aka weight decay multiplied by the sum of squares of our model parameters/weights) to the loss function. Refer to this [post](https://towardsdatascience.com/this-thing-called-weight-decay-a7cd4bcfccab) for a better understanding. `Loss = MSE(y_hat, y) + wd * sum(w^2)`
+* **Learning rate scheduling using ** [**One fit cycle:**](https://pytorch.org/docs/stable/_modules/torch/optim/lr_scheduler.html#OneCycleLR) The 1cycle policy anneals the learning rate from an initial learning rate to some maximum learning rate and then from that maximum learning rate to some minimum learning rate much lower than the initial learning rate. This policy was initially described in the paper [Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates](https://arxiv.org/abs/1708.07120). Refer to this [post](https://sgugger.github.io/the-1cycle-policy.html) to get a better understanding.
+* **EfficientNets:** Who would have thought that such a simple scaling of the 3 dimensions of a CNN can lead to such efficiency in model training!
+* **Using TPUs:** TPUs are really efficient for training large neural networks and data compared to CPU and GPU. The future of deep learning and AI is becoming more impressive.   
+* **Test Time Augmentation:** TTA provides a way to reduce the errors in the predictions and is a really useful technique. Combined with TPU, it provides the opportunity to train and evaluate models with a lot more diversity in the data.
+* **Label Smoothing:** A useful regularization technique for preventing the model from predicting too confidently by modifying hard labels into soft labels, which reduces the gap between the largest logit and the rest.
+* **K-fold Cross Validation in Neural Networks:** For my past deep learning projects, I have always trained using a separate train and validation sets. K-fold CV provide a more robust way to evaluate the performance of the model, and it has the advantage that every image is trained and evaluated.  
+* **Using Ensemble models from different data:** Combining predictions trained from images using CNNs and metadata is a great way to improving the performance of the model.
 
