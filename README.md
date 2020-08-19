@@ -47,18 +47,14 @@ This project is also a competition on **Kaggle**, and I wanted to give it a try,
 
 The [skin lesions images](https://www.kaggle.com/c/siim-isic-melanoma-classification/overview) were provided courtesy of the [International Skin Imaging Collaboration (ISIC)](https://www.isic-archive.com/#!/topWithHeader/wideContentTop/main). The ISIC Archive was created, which hosts an international repository of dermoscopic images, for both the purposes of clinical training, and for supporting technical research toward automated algorithmic analysis. It contains the largest publicly available collection of quality-controlled dermoscopic images of skin lesions. This competition was held in collaboration with the [Society for Imaging Informatics in Medicine (SIIM)](https://siim.org/). Images in TFRecord format have been resized to a uniform 1024x1024, and metadata were also provided. This year's data (2020) consists of ~33,000 train images and ~10,000 test images. There is also a data class imbalance, with more malignant compared to benign skin lesion images. 
 
-<br>
+<img src = './Pictures/data_inbalance.PNG'> 
 
-<img src = './Pictures/data_inbalance.PNG' align="left"> 
-
-<br>
-
-## Skin Lesion Samples
+## **Skin Lesion Samples**
 
 Here are some sample pictures of the skin lesion images and their associated diagnosis. 
 
-<img src = './Pictures/train_samples.PNG'>
 
+<img src = './Pictures/train_samples.PNG'>
 
 
 ## **Data Augmentation** 
