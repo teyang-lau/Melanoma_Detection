@@ -49,7 +49,7 @@ The [skin lesions images](https://www.kaggle.com/c/siim-isic-melanoma-classifica
 
 <br>
 
-<img src = './Pictures/data_inbalance.png' align="left">
+<img src = './Pictures/data_inbalance.PNG' align="left">
 
 
 
@@ -57,7 +57,7 @@ The [skin lesions images](https://www.kaggle.com/c/siim-isic-melanoma-classifica
 
 Here are some sample pictures of the skin lesion images and their associated diagnosis. 
 
-<img src = './Pictures/train_samples.png'>
+<img src = './Pictures/train_samples.PNG'>
 
 
 
