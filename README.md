@@ -7,26 +7,26 @@
 [![GitHub license](https://img.shields.io/github/license/teyang-lau/Dog_Breeds_Classification_CNN.svg)](https://github.com/teyang-lau/Melanoma_Detection/blob/master/LICENSE)
 
 Author: TeYang, Lau <br>
-Last Updated: 5 August 2020
+Last Updated: 19 August 2020
 
 <img src = './Pictures/melanoma.jpg'>
 
-### **Please refer to this [notebook](https://www.kaggle.com/teyang/pneumonia-detection-resnets-pytorch?scriptVersionId=38723009) on Kaggle for a more detailed description, analysis and insights of the project.** 
+### **Please refer to this [notebook](https://www.kaggle.com/teyang/melanoma-detection-using-effnet-and-meta-data) on Kaggle for a more detailed description, analysis and insights of the project.** 
 
 
 
 ## **Project Motivation** 
 
-For this project, I applied deep learning and convolutional neural networks onto health data, which is my interest and linked to my background and work experience in psychology and neuroscience. Machine learning will becoming increasingly important to healthcare, and can help in the diagnosis and prediction of many diseases if used correctly. Here, I also tried using TPUs to train the model using Tensorflow and Keras as the deep learning framework as TPUs are really efficient at crunching large datasets in a short time.
+For this project, I applied deep learning and convolutional neural networks onto health data, which is my interest and linked to my background and work experience in psychology and neuroscience. Machine learning will becoming increasingly important in healthcare, and can help with the diagnosis and prediction of many diseases if used correctly. Here, I also tried using **TPUs** to train the model using **Tensorflow** and **Keras** as the deep learning framework as TPUs are really efficient at crunching large datasets in a short time.
 
-This project is also a competition on Kaggle, and I wanted to give it a try, as there is often a better and greater community in the competition compared to other datasets. This provided the opportunity to learn from others who are more experienced data scientists and computer vision experts.
+This project is also a competition on **Kaggle**, and I wanted to give it a try, as there is often a better and greater community in the competition compared to other datasets. This provided the opportunity to learn from others who are more experienced data scientists and computer vision experts.
 
 
 
 ## **Project Goals** 
 
 1. To build a deep learning model to **detect** melanoma from images of skin lesions
-2. Use state-of-the-art TPUs to train the model
+2. Use state-of-the-art **TPUs** to train the model
 3.  Learn different strategies for improving model performance (e.g., learning rate scheduling, label smoothing, test time augmentation)
 
 
@@ -65,13 +65,13 @@ Here are some sample pictures of the skin lesion images and their associated dia
 
 I performed data augmentation by transforming the pictures (random rotation, flipping, random brightness and contrast, horizontal and vertical shifting, etc) to produce more diversity in the dataset. 
 
-<img src = './Pictures/augmentation.png'>
+<img src = './Pictures/augmentation2.png'>
 
 
 
 ## **Model Architecture** 
 
-I made use of the power of transfer learning to pretrain the model. As these were already pre-trained, we can use the first layers of weights and add a few additional layers to classify the images into 2 categories. For this project, I used the state-of-the-art Efficient Net model **EffNetB6**. It uniformly scales the 3 dimensions of a CNN: **Depth**, **Width**, and **Resolution** using a **compound coefficient ɸ **. ɸ is a user-specified coefficient, which produces **EfficientNets** ***B1-B7***.
+I made use of the power of transfer learning to pretrain the model. As these were already pre-trained, we can use the first layers of weights and add a few additional layers to classify the images into 2 categories. For this project, I used the state-of-the-art Efficient Net model **EffNet B2,B4,B6**. It uniformly scales the 3 dimensions of a CNN: **Depth**, **Width**, and **Resolution** using a **compound coefficient ɸ **. ɸ is a user-specified coefficient, which produces **EfficientNets** ***B1-B7***.
 
 <img src = './Pictures/effnet.png'>
 
@@ -81,32 +81,30 @@ I made use of the power of transfer learning to pretrain the model. As these wer
 
 The model was trained using K-fold cross validation. **Test time augmentation (TTA)** was applied to the validation set to reduce errors in predictions, which improves its performance. Training and validation performance of one fold is shown in the figure below.
 
+
+
 <img src = './Pictures/train_val_plot.png'>
 
-In addition to **area under operating characteristic (AUROC)** score, which is the competition's evaluation metric, I also looked at the **Precision Recall Curve** to get a better idea of the model's performance.
+
+
+In addition to **area under operating characteristic (AUROC)** score, which is the competition's evaluation metric, I also looked at the **Precision Recall Curve (PRC)** to get a better idea of the model's performance. The PRC showed that there can still be lots of improvement to our model, while the AUROC showed an over-optimistic good performance.
 
 
 
-## **Model Predictions** 
-
-The model achieved an **accuracy of ~89%**. However, since accuracy is not a good metric for class imbalanced data, precision, recall and F1-score should be used instead. The model achieved an almost perfect **recall of 99%**, with only 2 false negatives. **Precision** suffered at **~85%**, probably due to there being less normal images and so the model did not perform that well on them. The harmonic **F1-score is ~92%**. 
-
-<img src = './Pictures/confusion_matrix.png'>
+<img src = './Pictures/AUC_PRC.png'>
 
 
 
-Below are samples of the predictions and their true labels. 
+## **Model Test Performance** 
 
-
-
-<img src = './Pictures/predictions_labels.png'>
+The model achieved an **AUROC score of 0.95** on the public leaderboard test set (30%) and an **AUROC score of 0.93** on the private leaderboard (70%). 
 
 
 
 ## **Difficulties Faced** 
 
-* **Data class imbalance:** This is quite prevalent in the real world and as data scientists, we should all learn to embrace it and find ways to get around this problem. Usually, one way is to simply collect more data for the undersampled class. However, this is not possible for this dataset and especially for healthcare data, which is very difficult to collect and share. In reality, malignant cases will also be less prevalent than benign cases. In this notebook, I used stratified sampling to get around this problem but this does not totally solve the issue. One other way might be to apply weighted loss to give more weights to the loss of the malignant images.
-* **Overfitting:** This dataset is prone to overfitting, especially if one uses a quickly increasing learning rate. Therefore, I only ran the model for ~ 8 epochs as it starts to overtrain by then.
+* **Data class imbalance:** This is quite prevalent in the real world and as data scientists, we should all learn to embrace it and find ways to get around this problem. Usually, one way is to simply collect more data for the undersampled class. However, this is not possible for this dataset and especially for healthcare data, which is very difficult to collect and share. In reality, malignant cases will also be less prevalent than benign cases. In this notebook, I used stratified sampling to get around this problem but this does not totally solve the issue. One other way might be to apply weighted loss to give more weights to the loss of the malignant images. However, I tried it and it seems to hinder performance for this dataset.
+* **Overfitting:** This dataset is prone to overfitting, especially if one uses a quickly increasing learning rate. Therefore, I only ran the model for ~ 10 epochs as it starts to overtrain by then.
 
 
 
