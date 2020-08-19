@@ -49,9 +49,9 @@ The [skin lesions images](https://www.kaggle.com/c/siim-isic-melanoma-classifica
 
 <br>
 
-<img src = './Pictures/data_inbalance.PNG' align="left"> <br>
+<img src = './Pictures/data_inbalance.PNG' align="left"> 
 
-
+<br>
 
 ## Skin Lesion Samples
 
